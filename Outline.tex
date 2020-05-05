@@ -1,0 +1,59 @@
+
+\documentclass[twoside]{Style/ucasthesis}%
+
+\usepackage[authoryear,list]{Style/artratex}% document settings
+
+\usepackage{Style/artracom}% user defined commands
+
+\begin{document}
+
+\mainmatter% initialize the environment
+\chapter{引言}
+\section{研究背景}
+介绍图计算
+\section{LazyGraph 存在的问题}
+lazygraph 的性能提升效果依赖于具体的延迟一致开启策略
+lazygraph 现在采用一个决策树模型作为开启策略,它存在着以下这些方面的不足
+1. 难以解释
+2. 训练过程依赖于手动调优
+3. 无法做到自适应
+\section{基于解的关系的自适应优化方法}
+通过实验发现, 解存在着局部性规律可以作为自适应开启策略
+\section{本文的结构概述}
+每一章写了什么
+
+\chapter{相关技术介绍及研究动机}
+\section{分布式并行图处理框架}
+\subsection{任务调度机制}
+\subsection{通信机制}
+\subsection{图划分}
+\subsection{计算粒度与顶点计算模型}
+
+\section{基于延迟数据一致性方法的 LazyGraph 图计算系统}
+\subsection{顶点副本的延迟数据一致性方法}
+延迟数据一致方法是什么
+\subsection{延迟数据一致性方法的开启策略}
+现有的开启策略,及不足之处
+
+
+\chapter{基于解的局部性的自适应优化方法}
+\section{LazyGraph 性能提升规律研究}
+有效计算与无效计算
+\section{全局解和局部解的关系规律分布}
+解的局部性
+\section{基于全局解和局部解的关系的自适应优化方法}
+在线统计,在线自适应
+
+
+
+\chapter{实验结果}
+
+\chapter{总结与分析}
+
+
+%-
+%-> Appendix
+%-
+\cleardoublepage%
+\end{document}
+%---------------------------------------------------------------------------%

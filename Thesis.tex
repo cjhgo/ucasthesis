@@ -21,7 +21,7 @@
 %---------------------------------------------------------------------------%
 %->> Document settings
 %---------------------------------------------------------------------------%
-\usepackage[authoryear,list]{Style/artratex}% document settings
+\usepackage[super,list]{Style/artratex}% document settings
 %- usage: \usepackage[option1,option2,...,optionN]{artratex}
 %- Multiple optional arguments:
 %- [bibtex|biber]% set bibliography processor and package
@@ -67,7 +67,7 @@
 \intobmk*{\cleardoublepage}{\listtablename}% add link to bookmark
 \listoftables% table catalog
 }
-\input{Tex/Prematter}% symbol list, preface content
+% \input{Tex/Prematter}% symbol list, preface content
 %-
 %-> Mainmatter
 %-
@@ -77,8 +77,8 @@
 %-> Appendix
 %-
 \cleardoublepage%
-\appendix% initialize the environment
-\input{Tex/Appendix}% appendix content
+% \appendix% initialize the environment
+% \input{Tex/Appendix}% appendix content
 %-
 %-> Backmatter: bibliography, glossary, index
 %-
