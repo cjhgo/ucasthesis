@@ -17,38 +17,35 @@
 \setcounter{page}{1}% 开始页码
 \pagenumbering{Roman}% 页码符号
 
-
-% 图是一种重要的数据结构。
 随着大数据时代的到来，工业界和学术界开发了很多分布式图计算框架来对海量的图数据进行高效地处理分析。
-在这些框架中，顶点的副本点扮使得框架可以对对单个顶点进行并行处理，同时也让不同机器上的邻居顶点在本地就可以互相访问数据。
+在这些框架中，顶点的副本点使得框架可以对单个顶点进行并行处理，并使不同机器上的邻居顶点在本地互相访问数据成为可能。
 但是另一方面顶点的副本点也带来了数据一致性的问题。
 为了维护副本点之间的数据一致，分布式图计算系统往往采用把顶点的所有副本点当作是一个原子的不可分割的点的急切数据一致性的方法。
-急切数据一致性方法给分布式图计算系统带来了频繁的全局数据同步和通信开销。
-针对急切数据一致性的方法存在的问题，我们提出了一种把顶点的副本点看看作是互相独立的点各自独立迭代然后通过基于同样的差值消息进行计算得到相同视图的延迟数据一致性方法。
-延迟数据一致性方法有效减少了系统中进行数据一致所需要的数据同步和通信，因而极大地提升了现有分布式图计算的效率。
-但是这种方法还缺少一个合适的开启策略来得到相对最优的性能提升。
+然而，急切数据一致性方法给分布式图计算系统带来了频繁的全局数据同步和通信开销。
+针对该方法存在的问题，一种把顶点的副本点看看作是互相独立的点各自独立迭代然后通过基于同样的差值消息进行计算得到相同视图的延迟数据一致性方法（lazy data coherency, LazyAsync）被提出。
+这种方法可以有效减少系统中进行数据一致过程所需要的数据同步和通信，能够极大地提升现有分布式图计算的效率。
+然而，不同的开启策略会使LazyAsync执行模式下的分布式图计算得到不同程度的性能提升，
+这使得LazyAsync只能通过手动调优来获得最大程度的性能提升。
+至今仍没有行之有效的自适应优化方法解决LazyAsync的开启策略问题。
 
-之前的工作中我们提出了一种基于决策树开启策略的自适应优化方法来解决这一问题，
-但是决策树方法依赖于事先的手动调优产生合适的数据集，本质上是一种离线方法，
-此外决策树方法对于训练集之外的算法和输入图组合存在失灵的情况。
-因此决策树方法无法真正有效地解决延迟数据一致性的自适应优化问题。
+本文提出了一种基于解的局部性的自适应优化方法，
+它能够有效的针对不同环境自适应地选择开启策略使LazyAsync得到相对最优的性能提升。
+我们首先通过具体的实验分析发现了不同开启策略对LazyAsync的影响程度主要受冗余计算的影响。
+LazyAsync方法虽然避免了急切数据一致方法中存在的冗余同步和通信，
+但是在它的本地计算中存在着冗余计算。
+不同的开启策略下存在着不同程度的本地冗余计算。
+之后，通过离线分析，我们发现了分布式图计算迭代过程中存在着解的局部性规律。
+即点的全局解只由某个局部解构成，而解的局部性则有利于减少本地计算中的冗余计算。
+最终，通过在线地统计顶点上全局解和局部解的关系，
+我们实现了一种在线的自适应优化方法。
+它能够识别出迭代过程中出现的解的局部性，
+并指导开启LazyAsync的策略，从而得到和手动调优效果一致的相对最优的性能提升。
 
-在本文中，我们提出了一种基于解的局部性的自适应优化方法，它有效地解决了延迟数据一致方法如何得到相对最优的性能提升的问题。
-延迟数据一致方法不同的开启策略会得到不同程度的性能提升。
-本文先是通过具体的实验分析发现了延迟数据一致方法的性能提升的程度是受冗余计算的影响。
-延迟数据一致方法虽然避免了急切数据一致方法中存在的冗余同步和通信，但是在它的本地计算中存在着冗余计算。
-不同的开启策略下存在着不同程度的冗余计算因而得到了不同程度的性能提升。
-接下来本文通过离线分析发现了图计算迭代过程中存在着解的局部性规律，即点的全局解只由某个局部解构成。
-而解的局部性则有利于减少本地计算中的冗余计算。
-最终通过在线地统计顶点上全局解和局部解的关系，
-我们实现了一种在线的自适应优化方法能够识别出迭代过程中出现的解的局部性，
-然后指导开启延迟数据一致，从而得到和手动调优效果一致的相对最优的性能提升。
+本文主要针对LazyAsync方法进一步提出了一种基于解的局部性的自适应优化方法，
+解决了LazyAsync不同开启策略性能提升不同的问题。
+这种方法是一种在线统计方法，克服了之前的决策树方法需要事先繁重的手动调优的缺点，
+并能有效处理决策树失灵的情况，使得延迟数据一致性方法成为了一种真正实用的方法。
 
-在之前的工作中，我们针对分布式图计算框架在副本点上采用的急切数据一致性方法存在的频繁的冗余数据同步和计算这些问题
-提出了一种延迟数据一致性方法，极大地提高了现有图计算的效率。
-本文则进一步提出了一种基于解的局部性的自适应优化方法解决了延迟数据一致性方法遗留下的如何得到相对最优的性能提升的问题。
-这种方法是一种在线统计方法，克服了之前的决策树方法需要事先繁重的手动调优的缺点，并能有效处理决策树失灵的情况，
-使得延迟数据一致性方法成为了一个真正实用的方法。
 
 
 
@@ -62,34 +59,95 @@ With the advent of the era of big data, industry and academia have developed a n
 In these frameworks, the replication of vertices allows the framework to perform parallel processing on individual vertices, while also allowing neighboring vertices on different machines to access each other's data locally.
 But on the other hand the replication of vertices also poses data coherency problems.
 In order to maintain data coherency between the replication of vertices, distributed graph computing systems tend to use the method of treating all  replication of a vertex as if they were indivisible vertex of an atom with eager data coherency.
-The eager data coherency approach imposes frequent global data synchronization and communication overhead on distributed graph computing systems.
-To address the problem of the eager data coherency method, we propose a lazy data coherency method that treats replicate points of vertices as if they were independent of each other and then computes them independently by exchanging delta messages to get the same view.
-The lazy data coherency approach effectively reduces the data synchronization and communication required for data coherency in the system, thus greatly improving the efficiency of existing distributed graph computing.
-But this approach also lacks a proper turn-on strategy.
+However, the eager data coherency approach imposes frequent global data synchronization and communication overheads on distributed graph computing systems.
+To address the problems with this approach, one way that treats replication of vertices as if they were independent of each other and then computes them independently by exchanging delta messages to get the same view (lazy data coherency, LazyAsync) was proposed.
+This approach effectively reduces the data synchronization and communication required for data coherency in the system, thus greatly improving the efficiency of existing distributed graph computing.
+However, different turn-on strategy will result in different degrees of performance improvement for distributed graph computation in LazyAsync execution mode Elevation.
+This leaves LazyAsync to be manually tuned for maximum performance gains.
+There is still no proven adaptive optimization method to solve the problem of LazyAsync's turn-on strategy.
 
-In previous work we proposed an adaptive optimization method based on a decision tree turn-on strategy to address this problem.
-But the decision tree approach relies on prior manual tuning to produce the right data set and is essentially an offline approach.
-In addition, the decision tree method has failures for algorithm and input graph combinations outside the training set.
-Therefore, the decision tree approach cannot really effectively solve the problem of adaptive optimization for lazy data coherency.
-
-
-In this paper, we present an adaptive optimization method based on solution localities, which effectively solves the problem of how eager data coherency methods can obtain relatively optimal performance gains.
-Different turn-on strategies with different lazy data coherency methods result in different degrees of performance improvement.
-In this paper, it is first found through specific experimental analysis that the degree of performance improvement of the lazy data coherency method is influenced by redundant computing.
-The lazy data coherency method, while avoiding the redundant synchronization and communication that exists in the eager data coherency method, has redundant computations in its local computations.
+In this paper, we present an adaptive optimization method based on solution localities.
+It effectively adaptively selects the turn-on strategy for different environments to achieve relatively optimal performance for LazyAsync.
+In this paper, it is 
+We first found through specific experimental analysis that the degree of performance improvement of the lazy data coherency method with different turn-on strategy is mainly influenced by redundant computing.
+The LazyAsync methods, while avoiding the redundant synchronization and communication that exists in the eager data coherency method, has redundant computations in its local computations.
 There are different levels of redundant computation under different turn-on strategies, which results in different levels of performance improvement.
-The next paper finds, through offline analysis, that there is a local law of solution in the iterative process of graph computation, i.e. the global solution of a vertex consists only of some local solution.
-And the local nature of the solution facilitates the reduction of redundant computing in local computing.
+Subsequently, through offline analysis, we found that there is a pattern of localization of solutions in the iterative process of distributed graph computation.
+The global solution of a vertex consists only of some local solution, and the localization of solutions helps to reduce redundant computations in local computations.
 Ultimately, by counting the relationship between global and local solutions on vertices online.
-We implement an online adaptive optimization method capable of identifying the localities of the solutions that emerge during the iterative process.
+We implement an online adaptive optimization method capable of identifying the localities of  solutions that emerge during the iterative process.
 Then guide to turn on the lazy data coherency, resulting in relatively optimal performance gains consistent with manual tuning.
 
+In this paper, focusing on the LazyAsync method, we further propose an adaptive optimization method based on  the localities of  solutions ,
+solving the problem of performance improvement of LazyAsync with different turn-on strategies.
+This approach is an online statistical method that overcomes the disadvantages of previous decision tree methods that required onerous prior manual tuning.
+And the ability to effectively handle decision tree failures makes the lazy data coherency approach a truly practical approach.
 
-In previous work, we addressed these problems with frequent redundant data synchronization and computation of the eager data coherency approach adopted by the distributed graph computing framework at the replica vertex
-A lazy data coherency method is proposed that greatly improves the efficiency of existing graph calculations.
-This paper further proposes a solution-based localization adaptive optimization method that addresses the problem of how to obtain relatively optimal performance gains left over from the lazy data coherency method.
-This approach is an online statistical method that overcomes the disadvantages of the previous decision tree approach that required heavy manual tuning beforehand and can effectively handle decision tree failures.
-makes the lazy data coherency approach a truly practical one.
+
+% % 图是一种重要的数据结构。
+% 随着大数据时代的到来，工业界和学术界开发了很多分布式图计算框架来对海量的图数据进行高效地处理分析。
+% 在这些框架中，顶点的副本点扮使得框架可以对对单个顶点进行并行处理，同时也让不同机器上的邻居顶点在本地就可以互相访问数据。
+% 但是另一方面顶点的副本点也带来了数据一致性的问题。
+% 为了维护副本点之间的数据一致，分布式图计算系统往往采用把顶点的所有副本点当作是一个原子的不可分割的点的急切数据一致性的方法。
+% 急切数据一致性方法给分布式图计算系统带来了频繁的全局数据同步和通信开销。
+% 针对急切数据一致性的方法存在的问题，我们提出了一种把顶点的副本点看看作是互相独立的点各自独立迭代然后通过基于同样的差值消息进行计算得到相同视图的延迟数据一致性方法。
+% 延迟数据一致性方法有效减少了系统中进行数据一致所需要的数据同步和通信，因而极大地提升了现有分布式图计算的效率。
+% 但是这种方法还缺少一个合适的开启策略来得到相对最优的性能提升。
+
+% 之前的工作中我们提出了一种基于决策树开启策略的自适应优化方法来解决这一问题，
+% 但是决策树方法依赖于事先的手动调优产生合适的数据集，本质上是一种离线方法，
+% 此外决策树方法对于训练集之外的算法和输入图组合存在失灵的情况。
+% 因此决策树方法无法真正有效地解决延迟数据一致性的自适应优化问题。
+
+% 在本文中，我们提出了一种基于解的局部性的自适应优化方法，它有效地解决了延迟数据一致方法如何得到相对最优的性能提升的问题。
+% 延迟数据一致方法不同的开启策略会得到不同程度的性能提升。
+% 本文先是通过具体的实验分析发现了延迟数据一致方法的性能提升的程度是受冗余计算的影响。
+% 延迟数据一致方法虽然避免了急切数据一致方法中存在的冗余同步和通信，但是在它的本地计算中存在着冗余计算。
+% 不同的开启策略下存在着不同程度的冗余计算因而得到了不同程度的性能提升。
+% 接下来本文通过离线分析发现了图计算迭代过程中存在着解的局部性规律，即点的全局解只由某个局部解构成。
+% 而解的局部性则有利于减少本地计算中的冗余计算。
+% 最终通过在线地统计顶点上全局解和局部解的关系，
+% 我们实现了一种在线的自适应优化方法能够识别出迭代过程中出现的解的局部性，
+% 然后指导开启延迟数据一致，从而得到和手动调优效果一致的相对最优的性能提升。
+
+% 在之前的工作中，我们针对分布式图计算框架在副本点上采用的急切数据一致性方法存在的频繁的冗余数据同步和计算这些问题
+% 提出了一种延迟数据一致性方法，极大地提高了现有图计算的效率。
+% 本文则进一步提出了一种基于解的局部性的自适应优化方法解决了延迟数据一致性方法遗留下的如何得到相对最优的性能提升的问题。
+% 这种方法是一种在线统计方法，克服了之前的决策树方法需要事先繁重的手动调优的缺点，并能有效处理决策树失灵的情况，
+% 使得延迟数据一致性方法成为了一个真正实用的方法。
+
+% With the advent of the era of big data, industry and academia have developed a number of distributed graph computing frameworks to efficiently process and analyze large amounts of graph data.
+% In these frameworks, the replication of vertices allows the framework to perform parallel processing on individual vertices, while also allowing neighboring vertices on different machines to access each other's data locally.
+% But on the other hand the replication of vertices also poses data coherency problems.
+% In order to maintain data coherency between the replication of vertices, distributed graph computing systems tend to use the method of treating all  replication of a vertex as if they were indivisible vertex of an atom with eager data coherency.
+% The eager data coherency approach imposes frequent global data synchronization and communication overhead on distributed graph computing systems.
+% To address the problem of the eager data coherency method, we propose a lazy data coherency method that treats replicate points of vertices as if they were independent of each other and then computes them independently by exchanging delta messages to get the same view.
+% The lazy data coherency approach effectively reduces the data synchronization and communication required for data coherency in the system, thus greatly improving the efficiency of existing distributed graph computing.
+% But this approach also lacks a proper turn-on strategy.
+
+% In previous work we proposed an adaptive optimization method based on a decision tree turn-on strategy to address this problem.
+% But the decision tree approach relies on prior manual tuning to produce the right data set and is essentially an offline approach.
+% In addition, the decision tree method has failures for algorithm and input graph combinations outside the training set.
+% Therefore, the decision tree approach cannot really effectively solve the problem of adaptive optimization for lazy data coherency.
+
+
+% In this paper, we present an adaptive optimization method based on solution localities, which effectively solves the problem of how eager data coherency methods can obtain relatively optimal performance gains.
+% Different turn-on strategies with different lazy data coherency methods result in different degrees of performance improvement.
+% In this paper, it is first found through specific experimental analysis that the degree of performance improvement of the lazy data coherency method is influenced by redundant computing.
+% The lazy data coherency method, while avoiding the redundant synchronization and communication that exists in the eager data coherency method, has redundant computations in its local computations.
+% There are different levels of redundant computation under different turn-on strategies, which results in different levels of performance improvement.
+% The next paper finds, through offline analysis, that there is a local law of solution in the iterative process of graph computation, i.e. the global solution of a vertex consists only of some local solution.
+% And the local nature of the solution facilitates the reduction of redundant computing in local computing.
+% Ultimately, by counting the relationship between global and local solutions on vertices online.
+% We implement an online adaptive optimization method capable of identifying the localities of the solutions that emerge during the iterative process.
+% Then guide to turn on the lazy data coherency, resulting in relatively optimal performance gains consistent with manual tuning.
+
+
+% In previous work, we addressed these problems with frequent redundant data synchronization and computation of the eager data coherency approach adopted by the distributed graph computing framework at the replica vertex
+% A lazy data coherency method is proposed that greatly improves the efficiency of existing graph calculations.
+% This paper further proposes a solution-based localization adaptive optimization method that addresses the problem of how to obtain relatively optimal performance gains left over from the lazy data coherency method.
+% This approach is an online statistical method that overcomes the disadvantages of the previous decision tree approach that required heavy manual tuning beforehand and can effectively handle decision tree failures.
+% makes the lazy data coherency approach a truly practical one.
 
 \KEYWORDS{Adaptive Optimization, Lazy Data Coherency, Graph Computing, Distributed Computing}% 英文关键词
 %---------------------------------------------------------------------------%
