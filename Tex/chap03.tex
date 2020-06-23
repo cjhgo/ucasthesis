@@ -41,14 +41,14 @@ Scatter阶段，提供了顶点访问周边邻居并推送信息的接口，sssp
   \small
   \caption{基于GAS接口实现的 sssp 算法}\label{alg:sssp}
   \begin{algorithmic}[1]
-    \Procedure{sssp}{G(V，E，D)}
-    \State $gather(D_u，D_{(v，u)}，D_v): return$     \Comment{gather\_nbrs: empty}
-    \State $sum(a，b) : return a\bigoplus b $ \Comment{(min(a，b))}
-    \State $apply(D_u， new\_dist): 
+    \Procedure{sssp}{G(V,E,D)}
+    \State $gather(D_u,D_{(v,u)},D_v): return$     \Comment{gather\_nbrs: empty}
+    \State $sum(a,b) : return a\bigoplus b $ \Comment{(min(a,b))}
+    \State $apply(D_u, new\_dist): 
       \qquad D_u = new\_dist$
-    \State $scatter(D_u， D_{(u，v)}， D_v):$     \Comment{scatter\_nbrs: all\_out\_nbrs}
+    \State $scatter(D_u, D_{(u,v)}, D_v):$     \Comment{scatter\_nbrs: all\_out\_nbrs}
     \If{ $ changed(D\_v) $ }
-      \State { $ active(v， D_u+D_{(u，v)})$ }
+      \State { $ active(v, D_u+D_{(u,v)})$ }
     \EndIf
     \EndProcedure
   \end{algorithmic}

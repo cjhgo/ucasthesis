@@ -24,8 +24,8 @@
 并且图算法若要用MapReduce实现往往需要转换为一系列MapReduce任务，这又会带来额外的存储读写开销，
 所以传统的大数据处理平台无法胜任大规模图计算任务\cite{Malewicz@SIGMOD10}。
 为此人们开发了许多专门用于处理大规模图数据的分布式并行计算框架。    
-\cite{Malewicz@SIGMOD10， Low@12， Gonzalez@OSDI12， Zhu@OSDI16， Gonzalez@OSDI14， Avery@HS11， Shao@SIGMOD13， 
-Chen@EuroSys15， Xie@PPoPP15， Roy@SOSP15， Seo@CloudCom10， Gregor@POOSC15， Hoque@TRIOS13， Teixeira@SOSP15}
+\cite{Malewicz@SIGMOD10, Low@12, Gonzalez@OSDI12, Zhu@OSDI16, Gonzalez@OSDI14, Avery@HS11, Shao@SIGMOD13, 
+Chen@EuroSys15, Xie@PPoPP15, Roy@SOSP15, Seo@CloudCom10, Gregor@POOSC15, Hoque@TRIOS13, Teixeira@SOSP15}
 
 \section{针对副本点的延迟数据一致性方法}
 
@@ -44,7 +44,7 @@ Chen@EuroSys15， Xie@PPoPP15， Roy@SOSP15， Seo@CloudCom10， Gregor@POOSC15�
 
 %副本点存在的问题
 然而副本点在带来巨大好处的同时也引入了数据一致性的问题。
-分布式图计算编程框架要维护不同机器上存储的副本点$v_1，v_2，\cdots，v_k$之间的数据一致性。
+分布式图计算编程框架要维护不同机器上存储的副本点$v_1, v_2, \cdots, v_k$之间的数据一致性。
 很多编程框架都把每个顶点看做一个原子性的点，使用 eager data coherence 的方法来保证所有副本之间的数据是一致的，
 每个点横跨的机器数量和数据同步频率直接影响系统通信量的大小进而影响系统的性能。
 在这种方法中，系统把顶点$v$的副本点中的其中一个标记为master点，其他副本点为mirror点，其中master点保存了该顶点的真实数据，

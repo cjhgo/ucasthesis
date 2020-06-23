@@ -27,7 +27,7 @@
 在图\ref{fig:useless_and_local}中，我们再次以 sssp 为例子直观的展示全局解和局部解如何影响冗余计算。
 图\ref{fig:useless_and_local}中，左侧给出了一个全局解由多个局部解构成的例子，右侧给出了一个全局解由单个局部解构成的例子。
 在左侧中，一个顶点在5台机器上分布着副本点，并且5台机器上分别存在着6，7，7，8，9这5个局部解。
-根据sssp中对局部解之间$\oplus$的定义：$a\oplus b=std::min(a，b)$，全局解为6。
+根据sssp中对局部解之间$\oplus$的定义：$a\oplus b=std::min(a,b)$，全局解为6。
 所以只有一个局部解等于全局解，在机器1，2，3，4上的局部解都不等于全局解。
 如果此时对这5个副本点使用延迟数据一致性方法，那么机器1，2，3，4上的副本点所进行的本地计算都是无效而冗余的。
 在右侧中，同样是一个顶点在5台机器上分布着副本点，但是只在机器2上存在局部解，此时机器2上的局部解就是全局解。
@@ -85,8 +85,8 @@ master 点收到所有副本点上的消息累加和之后按照事先定义的$
 但是图计算过程中并不关心副本点上的消息累加和之间的数量和相对数值，只关心最终的全局消息累加和。
 消息交换完成得到全局消息累加和之后，代表着局部解的本地消息累加和就会被清空。
 所以，为了记录局部解和全局解从而分析它们的规律，我们需要给 vertex data 添加两个数据结构。
-一个是$std::map<int，T> data\_at\_iter$用于记录第$i$次迭代时顶点的全局解。
-一个是$std:map<int， std::vector<message\_type>> local\_sum$用于记录第$i$次迭代时
+一个是$std::map<int,T> data\_at\_iter$用于记录第$i$次迭代时顶点的全局解。
+一个是$std:map<int, std::vector<message\_type>> local\_sum$用于记录第$i$次迭代时
 顶点收到的多个消息累加和。
 
 在顶点进行全局的 apply 操作时，系统可以在顶点上记录下全局解。
@@ -150,35 +150,35 @@ master 点收到所有副本点上的消息累加和之后按照事先定义的$
   \captionsetup{justification=centering}
   \bisubcaptionbox{ Google 图上的统计结果\label{fig:percent-sssp-google}
 }{Statistical results on the Google graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-google.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-sssp-google.png}}
 \hspace{4em}
 \bisubcaptionbox{ CA-road 图上的统计结果\label{fig:percent-sssp-ca}
 }{Statistical results on the CA-road graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-ca.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-sssp-ca.png}}
 \hspace{4em}
 \bisubcaptionbox{ youtube 图上的统计结果\label{fig:percent-sssp-youtube}
 }{Statistical results on the youtube graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-youtube.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-sssp-youtube.png}}
 \hspace{4em}
 \bisubcaptionbox{ USA-road 图上的统计结果\label{fig:percent-sssp-usa}
 }{Statistical results on the USA-road graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-usa.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-sssp-usa.png}}
 \hspace{4em}
 \bisubcaptionbox{ soc-Live 图上的统计结果\label{fig:percent-sssp-soc}
 }{Statistical results on the soc-Live graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-soc.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-sssp-soc.png}}
 \hspace{4em}
 \bisubcaptionbox{ enwiki 图上的统计结果\label{fig:percent-sssp-enwiki}
 }{Statistical results on the enwiki graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-enwiki.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-sssp-enwiki.png}}
 \hspace{4em}
 \bisubcaptionbox{ uk-2005 图上的统计结果\label{fig:percent-sssp-uk}
 }{Statistical results on the uk-2005 graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-uk.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-sssp-uk.png}}
 \hspace{4em}
 \bisubcaptionbox{ twitter 图上的统计结果\label{fig:percent-sssp-ntw}
 }{Statistical results on the twitter graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-ntw.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-sssp-ntw.png}}
 \hspace{4em}
 
   \bicaption{SSSP 算法在不同图上解的局部性的规律统计结果}{Statistical results for the regularity of local solutions of the SSSP algorithm on different graphs.
@@ -194,35 +194,35 @@ master 点收到所有副本点上的消息累加和之后按照事先定义的$
   \captionsetup{justification=centering}
   \bisubcaptionbox{ Google 图上的统计结果\label{fig:percent-cc-google}
 }{Statistical results on the Google graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-google.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-cc-google.png}}
 \hspace{4em}
 \bisubcaptionbox{ CA-road 图上的统计结果\label{fig:percent-cc-ca}
 }{Statistical results on the CA-road graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-ca.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-cc-ca.png}}
 \hspace{4em}
 \bisubcaptionbox{ youtube 图上的统计结果\label{fig:percent-cc-youtube}
 }{Statistical results on the youtube graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-youtube.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-cc-youtube.png}}
 \hspace{4em}
 \bisubcaptionbox{ USA-road 图上的统计结果\label{fig:percent-cc-usa}
 }{Statistical results on the USA-road graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-usa.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-cc-usa.png}}
 \hspace{4em}
 \bisubcaptionbox{ soc-Live 图上的统计结果\label{fig:percent-cc-soc}
 }{Statistical results on the soc-Live graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-soc.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-cc-soc.png}}
 \hspace{4em}
 \bisubcaptionbox{ enwiki 图上的统计结果\label{fig:percent-cc-enwiki}
 }{Statistical results on the enwiki graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-enwiki.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-cc-enwiki.png}}
 \hspace{4em}
 \bisubcaptionbox{ uk-2005 图上的统计结果\label{fig:percent-cc-uk}
 }{Statistical results on the uk-2005 graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-uk.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-cc-uk.png}}
 \hspace{4em}
 \bisubcaptionbox{ twitter 图上的统计结果\label{fig:percent-cc-ntw}
 }{Statistical results on the twitter graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-ntw.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-cc-ntw.png}}
 \hspace{4em}
 
   \bicaption{CC 算法在不同图上解的局部性的规律统计结果}{Statistical results for the regularity of local solutions of the CC algorithm on different graphs.
@@ -235,35 +235,35 @@ master 点收到所有副本点上的消息累加和之后按照事先定义的$
   \captionsetup{justification=centering}
   \bisubcaptionbox{ Google 图上的统计结果\label{fig:percent-pg-google}
 }{Statistical results on the Google graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-google.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-pg-google.png}}
 \hspace{4em}
 \bisubcaptionbox{ CA-road 图上的统计结果\label{fig:percent-pg-ca}
 }{Statistical results on the CA-road graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-ca.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-pg-ca.png}}
 \hspace{4em}
 \bisubcaptionbox{ youtube 图上的统计结果\label{fig:percent-pg-youtube}
 }{Statistical results on the youtube graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-youtube.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-pg-youtube.png}}
 \hspace{4em}
 \bisubcaptionbox{ USA-road 图上的统计结果\label{fig:percent-pg-usa}
 }{Statistical results on the USA-road graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-usa.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-pg-usa.png}}
 \hspace{4em}
 \bisubcaptionbox{ soc-Live 图上的统计结果\label{fig:percent-pg-soc}
 }{Statistical results on the soc-Live graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-soc.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-pg-soc.png}}
 \hspace{4em}
 \bisubcaptionbox{ enwiki 图上的统计结果\label{fig:percent-pg-enwiki}
 }{Statistical results on the enwiki graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-enwiki.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-pg-enwiki.png}}
 \hspace{4em}
 \bisubcaptionbox{ uk-2005 图上的统计结果\label{fig:percent-pg-uk}
 }{Statistical results on the uk-2005 graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-uk.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-pg-uk.png}}
 \hspace{4em}
 \bisubcaptionbox{ twitter 图上的统计结果\label{fig:percent-pg-ntw}
 }{Statistical results on the twitter graph}
-{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-ntw.png}}
+{\includegraphics[height=3.8cm,width=0.4\textwidth]{percent-pg-ntw.png}}
 \hspace{4em}
 
   \bicaption{PageRank 算法在不同图上解的局部性的规律统计结果}{Statistical results for the regularity of local solutions of the PageRank algorithm on different graphs.
@@ -471,18 +471,18 @@ Page Rank这四种典型的图算法来作为测试用例。
   \captionsetup{justification=centering}
 	\bisubcaptionbox{ SSSP 的加速比\label{fig:speedup_sssp}}{Speedup in SSSP}
 	%[3cm] %标题的长度，超过则会换行，如下一个小图。
-	{\includegraphics[height=4.5cm，width=0.4\textwidth]{speedup_sssp.png}}
+	{\includegraphics[height=4.5cm,width=0.4\textwidth]{speedup_sssp.png}}
   \hspace{4em}% 这里记得不要空行，否则会变为垂直的两个图
 	\bisubcaptionbox{CC 的加速比\label{fig:speedup_cc}}{Speedup in CC}
 	%[3cm] %标题的长度，超过则会换行，如下一个小图。
-	{\includegraphics[height=4.5cm，width=0.4\textwidth]{speedup_cc.png}}
+	{\includegraphics[height=4.5cm,width=0.4\textwidth]{speedup_cc.png}}
 	\hspace{4em}% 这里记得不要空行，否则会变为垂直的两个图
 	\bisubcaptionbox{K-Core 的加速比\label{fig:speedup_kcore}}{Speedup in K-Core}
 	%[3cm] %标题的长度，超过则会换行，如下一个小图。
-	{\includegraphics[height=4.5cm，width=0.4\textwidth]{speedup_kcore.png}}
+	{\includegraphics[height=4.5cm,width=0.4\textwidth]{speedup_kcore.png}}
 	\hspace{4em}% 这里记得不要空行，否则会变为垂直的两个图
 	\bisubcaptionbox{PageRank 的加速比\label{fig:speedup_pagerank}}{Speedup in PageRank}
-	{\includegraphics[height=4.5cm，width=0.4\textwidth]{speedup_pagerank.png}}
+	{\includegraphics[height=4.5cm,width=0.4\textwidth]{speedup_pagerank.png}}
 	\bicaption{ SSSP，CC，K-Core和PageRank 在48机真实图上的性能对比}{Speedup Comparisons for SSSP， CC ，K-Core and  PageRank on Real-World Graphs on 48 Machines}
 	\label{fig:speedup_four_algorithm}
 \end{figure}
