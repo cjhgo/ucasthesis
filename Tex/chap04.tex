@@ -24,10 +24,10 @@
 全局解由单个局部解构成时有利于开启延迟数据一致性方法。
 
 
-在图\ref{fig:useless_and_local}中，我们再次以 sssp 为例子直观的展示全局解和局部解如何影响冗余计算。
+在图\ref{fig:useless_and_local}中，我们再次以 SSSP 为例子直观的展示全局解和局部解如何影响冗余计算。
 图\ref{fig:useless_and_local}中，左侧给出了一个全局解由多个局部解构成的例子，右侧给出了一个全局解由单个局部解构成的例子。
 在左侧中，一个顶点在5台机器上分布着副本点，并且5台机器上分别存在着6，7，7，8，9这5个局部解。
-根据sssp中对局部解之间$\oplus$的定义：$a\oplus b=std::min(a,b)$，全局解为6。
+根据SSSP中对局部解之间$\oplus$的定义：$a\oplus b=std::min(a,b)$，全局解为6。
 所以只有一个局部解等于全局解，在机器1，2，3，4上的局部解都不等于全局解。
 如果此时对这5个副本点使用延迟数据一致性方法，那么机器1，2，3，4上的副本点所进行的本地计算都是无效而冗余的。
 在右侧中，同样是一个顶点在5台机器上分布着副本点，但是只在机器2上存在局部解，此时机器2上的局部解就是全局解。
@@ -272,7 +272,7 @@ master 点收到所有副本点上的消息累加和之后按照事先定义的$
 \end{figure}
 
 
-通过在计算引擎中添加代码和使用map-reduce接口进行统计，本课题在Single Source Shortest Path(SSSP)， 
+通过在计算引擎中添加代码和使用map-reduce接口进行统计，本课题在SSSP， 
 Connected Component(CC)，
 PageRank 这3种常用的图算法和8个典型的图上进行实验对解的局部性规律进行了统计。
 8个图数据集的元数据如表\ref{tab:experimental_data_set}所示，它们包含3个不同类型，下载自
@@ -458,7 +458,7 @@ PowerGraph的原始同步引擎，LazyGraph的手动调优方法，和基于解�
 这些数据集同4.2节中使用的一样，具体元数据如表\ref{tab:experimental_data_set_and_partition_algorithm}所示。
 同时，我们均使用 coordinated vertex-cut 划分算法来做图的划分。
 实验过程中使用了
-Single Source Shortest Path(SSSP)， 
+SSSP， 
 Connected Component(CC)，
 K-core Decomposition(kcore)， 
 Page Rank这四种典型的图算法来作为测试用例。
