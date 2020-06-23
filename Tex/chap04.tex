@@ -26,8 +26,8 @@
 
 在图\ref{fig:useless_and_local}中，我们再次以 sssp 为例子直观的展示全局解和局部解如何影响冗余计算。
 图\ref{fig:useless_and_local}中，左侧给出了一个全局解由多个局部解构成的例子，右侧给出了一个全局解由单个局部解构成的例子。
-在左侧中，一个顶点在5台机器上分布着副本点，并且5台机器上分别存在着6，7，7，8，9着5个局部解。
-根据sssp中对局部解之间$\oplus$的定义：$a\oplus b=std::min(a,b)$，全局解为6。
+在左侧中，一个顶点在5台机器上分布着副本点，并且5台机器上分别存在着6，7，7，8，9这5个局部解。
+根据sssp中对局部解之间$\oplus$的定义：$a\oplus b=std::min(a，b)$，全局解为6。
 所以只有一个局部解等于全局解，在机器1，2，3，4上的局部解都不等于全局解。
 如果此时对这5个副本点使用延迟数据一致性方法，那么机器1，2，3，4上的副本点所进行的本地计算都是无效而冗余的。
 在右侧中，同样是一个顶点在5台机器上分布着副本点，但是只在机器2上存在局部解，此时机器2上的局部解就是全局解。
@@ -46,9 +46,22 @@
 
 
 通过上边的例子我们可以看到，全局解由单个局部解构成时有利于开启延迟数据一致性。
+分布式图计算框架把单个顶点划分为多个副本点。
+在延迟数据一致性方法中，每次迭代时，顶点的全局解也就由多个副本点上的局部解构成。
+从单个顶点的角度而言，
+如果顶点的全局解由多个局部解构成，然后此时在各个局部解所在的副本点上进行延迟数据一致性方法，也就是在本地计算中进行额外的多轮迭代，
+由于副本点上都是不准确的局部解，因而此时所进行的本地计算都是在不准确的结果上进行的，所以最终本地计算中更多是冗余计算。
+相反，如果顶点的全局解只由某个局部解构成，那么在局部解所在的副本点上开启延迟数据一致性方法，
+由于局部解就等于全局解，所以此时相当于在全局同步之后进行的迭代，那么此时所进行的本地计算中冗余计算的比例就较低。
+也就是说，从单个顶点而言，当全局解只由某个局部解构成时，本地计算中冗余计算比例较低，有利于开启延迟数据一致性方法，
+当全局解由多个局部解构成时，本地计算中冗余计算比例较高，不利于开启延迟数据一致性方法。
+
+% 在图计算的每次迭代过程中有很多活跃点，这些活跃点中既有全局解由单个局部解构成的，也有全局解由多个局部解构成的。
 在图计算过程中的任何时刻，全局解由单个局部解构成和由多个局部解构成的情况都是同时存在的。
-但是如果大多数顶点的全局解都只由当局部解构成，那么此时显然是开启延迟数据一致性的良好时机。
-这种情况我么称之为解的局部性。
+如果大部分活跃点的全局解只由单个局部解构成，那么此时开启延迟数据一致性能够减少冗余计算，最终得到较好的性能提升。
+% 但是如果大多数顶点的全局解都只由当局部解构成，那么此时显然是开启延迟数据一致性的良好时机。
+对于这种情况，我们称之为解的局部性。
+% 这种情况我们称之为解的局部性。
 
 \section{全局解和局部解的关系中的局部性规律}
 为了研究图计算过程中解的局部性的变化规律，我们需要保存每次迭代过程中的局部解，然后对其进行观察。
@@ -72,21 +85,21 @@ master 点收到所有副本点上的消息累加和之后按照事先定义的$
 但是图计算过程中并不关心副本点上的消息累加和之间的数量和相对数值，只关心最终的全局消息累加和。
 消息交换完成得到全局消息累加和之后，代表着局部解的本地消息累加和就会被清空。
 所以，为了记录局部解和全局解从而分析它们的规律，我们需要给 vertex data 添加两个数据结构。
-一个是$std::map<int,T> data\_at\_iter$用于记录第$i$次迭代时顶点的全局解。
-一个是$std:map<int, std::vector<message\_type>> local\_sum$用于记录第$i$次迭代时
+一个是$std::map<int，T> data\_at\_iter$用于记录第$i$次迭代时顶点的全局解。
+一个是$std:map<int， std::vector<message\_type>> local\_sum$用于记录第$i$次迭代时
 顶点收到的多个消息累加和。
 
 在顶点进行全局的 apply 操作时，系统可以在顶点上记录下全局解。
 为了记录消息累加和则需要在两个地方添加代码。
 第一处是master点发送自己的本地消息累加和，由于不通过网络交换消息，这里可以直接写入。
 第二处是为了记录mirror点向master点通过网络发送的本地消息累加和，需要在收消息的地方添加代码。
-通过以上两个地方添加记录消息累加和的代码,保证了对局部解的记录是不重不漏的。 
+通过以上两个地方添加记录消息累加和的代码，保证了对局部解的记录是不重不漏的。 
 需要说明的是，局部解的数量有可能少于副本点的数量。
 因为那些不被激活的副本点是不会向 master 发送包含本地消息累加和的消息的。
 
 
 图\ref{fig:local_sssp}给出了一个具体的顶点上记录到的全局解和消息累加和的例子。
-图中第一列是顶点id，第二列是最终解，第三列是迭代解，第四列是副本点的数据，接下来是顶点上收到的多个消息累加和，
+图中第一列是顶点id，第二列是最终解，第三列是迭代解，第四列是副本点的数量，接下来是顶点上收到的多个消息累加和，
 最后一列是顶点上一轮的迭代解。
 以图中3629703号顶点为例，可以看到这个顶点有20个副本，全局解是6，由15个局部解构成，并且其中7个局部解都不等于全局解。
 在这样的顶点上使用延迟数据一致性方法显然会造成一定数量的冗余计算。
@@ -101,31 +114,267 @@ master 点收到所有副本点上的消息累加和之后按照事先定义的$
   \label{fig:local_sssp}
 \end{figure}
 %用mapreduce进行统计
-通过记录具体的本地消息累加和，我们可以观察在迭代过程中解的局部性的变换规律。
+通过记录具体的本地消息累加和，我们可以观察在迭代过程中解的局部性的变化规律。
 即图计算的迭代过程中，有多少顶点上的全局解是由单个局部解构成的，这样的顶点是否占多数。
-图计算完成之后,运行时记录的全局解和局部解这些信息保存在了 graph 中。 
+图计算完成之后，运行时记录的全局解和局部解这些信息保存在了 graph 中。 
 利用 PowerGraph 提供的 map-reduce 接口，我们可以通过 graph 上记录的数据具体统计每一轮迭代中
 全局解由多个和单个局部解构成的顶点的数量。
 
 %统计结果
 
-通过在计算引擎中添加代码和使用map-reduce接口进行统计，本课题在4种常用的图算法和8个典型的图上得到了以下的实验结果。
 
-通过分析我们可以看到，在4种算法和输入图上，在图计算的后期都存在着典型的解的局部性规律。
+\begin{table}[htb]
+  \centering
+  \bicaption{实验数据集}{Experimental Data Set }
+  \label{tab:experimental_data_set}
+    \begin{tabular}{ccccccc}
+     \toprule[1.5pt]
+     & \textbf{Graph} & \textbf{\#V} & \textbf{\#E} & \textbf{E/V} & \textbf{$\lambda$} } \\
+     \midrule[1pt]
+     \multirow{2}{*}{web} & UK-2005 & 40M & 936M & 23.73 & 3.51  \\
+                                         & web-Google & 0.9M & 5.1M & 5.83 & 2.47 \\
+     \cmidrule(lr){1-6}
+      \multirow{2}{*}{road} & road-USA-net & 24M & 58M & 2.44 & 2.14 \\
+                                          & roadNet-CA & 2M & 5.5M & 2.82 & 2.09 \\
+      \cmidrule(lr){1-6}
+      \multirow{4}{*}{social} & twitter & 61.58M & 1468M & 23.85 & 5.52 \\
+                                          & soc-LiveJournal & 4.84M & 68.9M & 14.23 & 4.96 \\
+                                          & enwiki & 4.2M & 101.36M & 24.09M & 7.22 \\
+                                          & com-youtube & 1.1M & 6M & 5.27M & 2.70 \\
+     \bottomrule[1.5pt]
+    \end{tabular}
+\end{table}
+
+\begin{figure}[h]
+	\centering
+  \captionsetup{justification=centering}
+  \bisubcaptionbox{ Google 图上的统计结果\label{fig:percent-sssp-google}
+}{Statistical results on the Google graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-google.png}}
+\hspace{4em}
+\bisubcaptionbox{ CA-road 图上的统计结果\label{fig:percent-sssp-ca}
+}{Statistical results on the CA-road graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-ca.png}}
+\hspace{4em}
+\bisubcaptionbox{ youtube 图上的统计结果\label{fig:percent-sssp-youtube}
+}{Statistical results on the youtube graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-youtube.png}}
+\hspace{4em}
+\bisubcaptionbox{ USA-road 图上的统计结果\label{fig:percent-sssp-usa}
+}{Statistical results on the USA-road graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-usa.png}}
+\hspace{4em}
+\bisubcaptionbox{ soc-Live 图上的统计结果\label{fig:percent-sssp-soc}
+}{Statistical results on the soc-Live graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-soc.png}}
+\hspace{4em}
+\bisubcaptionbox{ enwiki 图上的统计结果\label{fig:percent-sssp-enwiki}
+}{Statistical results on the enwiki graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-enwiki.png}}
+\hspace{4em}
+\bisubcaptionbox{ uk-2005 图上的统计结果\label{fig:percent-sssp-uk}
+}{Statistical results on the uk-2005 graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-uk.png}}
+\hspace{4em}
+\bisubcaptionbox{ twitter 图上的统计结果\label{fig:percent-sssp-ntw}
+}{Statistical results on the twitter graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-sssp-ntw.png}}
+\hspace{4em}
+
+  \bicaption{SSSP 算法在不同图上解的局部性的规律统计结果}{Statistical results for the regularity of local solutions of the SSSP algorithm on different graphs.
+}
+	\label{fig:percent-sssp}
+\end{figure}
+
+
+
+
+\begin{figure}[h]
+	\centering
+  \captionsetup{justification=centering}
+  \bisubcaptionbox{ Google 图上的统计结果\label{fig:percent-cc-google}
+}{Statistical results on the Google graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-google.png}}
+\hspace{4em}
+\bisubcaptionbox{ CA-road 图上的统计结果\label{fig:percent-cc-ca}
+}{Statistical results on the CA-road graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-ca.png}}
+\hspace{4em}
+\bisubcaptionbox{ youtube 图上的统计结果\label{fig:percent-cc-youtube}
+}{Statistical results on the youtube graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-youtube.png}}
+\hspace{4em}
+\bisubcaptionbox{ USA-road 图上的统计结果\label{fig:percent-cc-usa}
+}{Statistical results on the USA-road graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-usa.png}}
+\hspace{4em}
+\bisubcaptionbox{ soc-Live 图上的统计结果\label{fig:percent-cc-soc}
+}{Statistical results on the soc-Live graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-soc.png}}
+\hspace{4em}
+\bisubcaptionbox{ enwiki 图上的统计结果\label{fig:percent-cc-enwiki}
+}{Statistical results on the enwiki graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-enwiki.png}}
+\hspace{4em}
+\bisubcaptionbox{ uk-2005 图上的统计结果\label{fig:percent-cc-uk}
+}{Statistical results on the uk-2005 graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-uk.png}}
+\hspace{4em}
+\bisubcaptionbox{ twitter 图上的统计结果\label{fig:percent-cc-ntw}
+}{Statistical results on the twitter graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-cc-ntw.png}}
+\hspace{4em}
+
+  \bicaption{CC 算法在不同图上解的局部性的规律统计结果}{Statistical results for the regularity of local solutions of the CC algorithm on different graphs.
+}
+	\label{fig:percent-cc}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+  \captionsetup{justification=centering}
+  \bisubcaptionbox{ Google 图上的统计结果\label{fig:percent-pg-google}
+}{Statistical results on the Google graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-google.png}}
+\hspace{4em}
+\bisubcaptionbox{ CA-road 图上的统计结果\label{fig:percent-pg-ca}
+}{Statistical results on the CA-road graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-ca.png}}
+\hspace{4em}
+\bisubcaptionbox{ youtube 图上的统计结果\label{fig:percent-pg-youtube}
+}{Statistical results on the youtube graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-youtube.png}}
+\hspace{4em}
+\bisubcaptionbox{ USA-road 图上的统计结果\label{fig:percent-pg-usa}
+}{Statistical results on the USA-road graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-usa.png}}
+\hspace{4em}
+\bisubcaptionbox{ soc-Live 图上的统计结果\label{fig:percent-pg-soc}
+}{Statistical results on the soc-Live graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-soc.png}}
+\hspace{4em}
+\bisubcaptionbox{ enwiki 图上的统计结果\label{fig:percent-pg-enwiki}
+}{Statistical results on the enwiki graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-enwiki.png}}
+\hspace{4em}
+\bisubcaptionbox{ uk-2005 图上的统计结果\label{fig:percent-pg-uk}
+}{Statistical results on the uk-2005 graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-uk.png}}
+\hspace{4em}
+\bisubcaptionbox{ twitter 图上的统计结果\label{fig:percent-pg-ntw}
+}{Statistical results on the twitter graph}
+{\includegraphics[height=3.8cm，width=0.4\textwidth]{percent-pg-ntw.png}}
+\hspace{4em}
+
+  \bicaption{PageRank 算法在不同图上解的局部性的规律统计结果}{Statistical results for the regularity of local solutions of the PageRank algorithm on different graphs.
+}
+	\label{fig:percent-pg}
+\end{figure}
+
+
+通过在计算引擎中添加代码和使用map-reduce接口进行统计，本课题在Single Source Shortest Path(SSSP)， 
+Connected Component(CC)，
+PageRank 这3种常用的图算法和8个典型的图上进行实验对解的局部性规律进行了统计。
+8个图数据集的元数据如表\ref{tab:experimental_data_set}所示，它们包含3个不同类型，下载自
+Stanford Large Network Dataset Collection\cite{SNAP}、
+the Laboratory for Web Algorithmic \cite{LAW}
+和 the DIMACS shortest paths challenge\cite{DIMACS}。
+
+实验结果如图\ref{fig:percent-sssp}，\ref{fig:percent-cc}，\ref{fig:percent-pg}所示。
+图中分别给出了 SSSP，CC，PageRank 算法在 
+web-Google， roadNet-CA， com-youtube， USA-road， 
+soc-LiveJournal， enwiki， uk-2005， twitter 
+这8个大图上关于解的局部性规律的统计结果。
+图中每个子图的横坐标轴代表了图计算过程的迭代轮次，
+左侧纵坐标轴代表每次迭代的总的活跃点和由多个局部解构成全局解的活跃点的数量，
+右侧纵坐标轴代表每次迭代的活跃点中具有局部性规律的活跃点的比例。
+活跃点的局部性规律指的是它的全局解只由单个局部解构成。
+
+以图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-google})为例，
+这个子图给出了SSSP算法在web-Google图上关于解的局部性规律的统计结果。
+图中的蓝色曲线给出了图计算迭代过程中总的活跃点的数量先上升后下降的变化趋势。
+图中的红色曲线给出了这些活跃点中由多个局部解构成全局解的活跃点的数量变化趋势。
+可以看到在整个图计算过程中，这些由多个局部解构成全局解的活跃点都只占总活跃点数量的一小部分。
+图中的绿色曲线则具体给出了图计算迭代过程中由单个局部解构成全局解这样具有解的局部性规律的活跃点的比例。
+从图中可以看到，在整个图计算过程中，具有解的局部性规律的活跃点的比例始终在94\%以上。
+也就是说在图计算过程中，大部分活跃点的全局解都只由单个局部解构成。
+
+图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-youtube})，
+\ref{fig:percent-sssp}(\subref{fig:percent-sssp-ca})，
+\ref{fig:percent-sssp}(\subref{fig:percent-sssp-usa})给出了
+SSSP算法在 com-youtube，roadNet-CA，USA-road图上的统计数据。
+这些图上的统计结果也表明了类似的解的局部性规律，尤其是在
+roadNet-CA，USA-road这两张图上，
+具有解的局部性规律的活跃点的比例一直保持在96\%以上。
+
+图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-soc})给出了
+SSSP算法在soc-LiveJournal图上关于解的局部性规律的统计结果。
+和前4个图上的统计结果不同，在soc-LiveJournal图上，
+由多个局部解构成全局解的活跃点的数量存在一个明显上升然后下降的趋势，
+并且上升的数量使得其在总活跃点中占据较高的比例。
+相应地，图中表示具有局部性规律活跃点数量比例的绿色曲线呈现出下降后上升的趋势。
+在之前的4个图上，绿色曲线虽然也有波动但是一直保持在90\%以上，
+而在soc-LiveJournal这个图上，绿色曲线在下降的最低点达到了50\%，随后逐渐上升接近100\%。
+也就是说，在迭代的中间阶段，有相当一部分数量的活跃点的全局解由多个局部解构成，
+此时解的局部性规律现象不明显，
+到了迭代的后期，红色曲线逐渐上升接近100\%，解的局部性规律现象开始出现。
+同时对比三条曲线，我们可以发现，在活跃点开始下降的时候，具有解的局部性规律的活跃点的比例开始上升。
+
+图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-enwiki})，
+\ref{fig:percent-sssp}(\subref{fig:percent-sssp-uk})，
+\ref{fig:percent-sssp}(\subref{fig:percent-sssp-ntw})给出了
+SSSP算法在 enwiki，uk-2005，twitter图上的统计数据。
+在这些图上的统计结果上出现了和soc-LiveJournal图上类似的解的局部性规律。
+即在一开始活跃点上升的阶段，由多个局部解构成全局解的活跃点的数量也同样上升，并且占据较高比例，
+在活跃点下降之后，由多个局部解构成全局解的活跃点的数量也同样下降，并且占据比例下降。
+解的局部性规律在活跃点数量下降的后期才开始出现。
+
+
+
+图\ref{fig:percent-cc}，\ref{fig:percent-pg}分别给出了 
+CC，PageRank 算法在 web-Google， roadNet-CA， com- youtube， USA-road， 
+soc-LiveJournal， enwiki， uk-2005， twitter 
+这8个大图上关于解的局部性规律的统计结果。
+由于是不同的图算法，图中活跃点的变化趋势并不相同。
+在SSSP算法中，活跃点是从源点开始一层一层激活的，
+在CC算法中，邻居点全都会被激活，
+在PageRank算法中，则在一开始就激活全部顶点。
+同时由于图算法最终都会收敛，所以活跃点最终都会下降为0。
+所以在有些图算法上，活跃点会先上升后下降，在有些图算法上活跃点则会一直下降。
+
+不同的图算法在不同输入图上活跃点的变化趋势虽然不同，
+但是在图\ref{fig:percent-sssp}，\ref{fig:percent-cc}，\ref{fig:percent-pg}这些统计结果上，
+解的局部性的规律的却是普遍存在的。
+只不过在web- Google，roadNet-CA，com-youtube， USA-road 这些图上，
+解的局部性规律一开始就存在，即一开始那些由单个局部解构成全局解的活跃点就一直占据较高的比例，
+在soc-LiveJournal，enwiki，uk-2005，twitter 这些图上，
+解的局部性规律在一开始不明显，由多个局部解构成全局解的活跃点占据较高比例，
+直到活跃点数量开始下降的阶段开始，由单个局部解构成全局解的活跃点才占较高的比例，
+解的局部性规律才开始出现。
+
+
+通过以上分析可以得出这样的结论，
+在不同的算法和输入图上都存在着典型的解的局部性规律，
 即在每轮的活跃点中，大部分顶点的全局解都只由单个局部解构成，由多个局部解构成全局解的顶点只占极少数，甚至没有。
-但是在图计算的前期，解的局部性的变化规律则和具体的算法，输入图，以及集群配置有关。
 
-
+同时，解的局部性规律虽然普遍存在，但却并不是一开始就存在。
 在有些图上，由多个局部解构成全局解的点从一开始就只占极少数，并且数量一直在下降。
 而在有些图上，由多个局部解构成全局解的点则存在一个先上升后下降的趋势。
 也就是说，解的局部性在有的图和算法的组合上是一直都存在的。
 而在另外一些图和算法的组合上，则是随着迭代的进行才逐渐出现。
+这也是延迟数据一致性方法需要调优才能得到相对最好的性能这一问题的原因。
 
-同时结合之前的决策树策略来分析，我们发现它们在开启策略的选择上是一致的。
-在决策树策略中，针对那些 $e\_div\_v$ 小于 10 的图，系统直接开启延迟数据一致性方法，就能获得相对较好的性能提升。
-而在我们的实验中发现，那写 $e\_div\_v$ 小于 10 的图，确实一开始就存在着解的局部性的规律。
-针对那些 $e\_div\_v$ 大于 10 的图， 决策树指导系统在活跃点下降率超过7\%时开启延迟数据一致性方法，然后就能获得相对较好的性能提升。
-而在我们的实验中发现，活跃点下降超过7\%的时间节点，也是那些 $e\_div\_v$ 大于10的图开始出现解的局部性的规律的时候。
+% 但是在图计算的前期，解的局部性的变化规律则和具体的算法，输入图，以及集群配置有关。
+
+最后，结合图\ref{fig:percent-sssp}，\ref{fig:percent-cc}，\ref{fig:percent-pg}中的实验结果和之前的决策树策略来分析，
+我们发现决策树中选取的特征和实验结果中揭示的规律是一致的。
+在决策树策略中，我们使用边和顶点的比例$\frac{e}{v}$来表示图的输入图本地性，
+针对那些 $\frac{e}{v} \textless 10$  的图，系统直接开启延迟数据一致性方法，就能获得相对较好的性能提升。
+而在我们的实验中发现，在 $\frac{e}{v} \textless 10$ 的web-Google，roadNet-CA，com-youtube，
+USA-road 这4个图上，确实一开始就存在着解的局部性的规律。
+针对那些 $\frac{e}{v} \textgreater 10$ 的图， 决策树指导系统在活跃点下降率超过7\%时开启延迟数据一致性方法，然后就能获得相对较好的性能提升。
+而在我们的实验中发现，在$\frac{e}{v} \textgreater 10$的 soc-LiveJournal，enwiki，uk-2005，twitter 这4个图上，
+活跃点下降超过7\%的时间节点，也是由多个局部解构成全局解的活跃点数量开始下降，解的局部性的规律开始出现的时候。
 
 % 同时对于决策树失灵的情况
 %结果分析
@@ -155,4 +404,149 @@ master 点收到所有副本点上的消息累加和之后按照事先定义的$
 
 \section{性能评测}
 
-% \section{本章小结}
+在本节中，我们在48台虚拟机构成的集群环境中，对比了PowerGraph原始的同步引擎，
+LazyGraph的手动调优方法和LazyGraph的自适应优化方法
+这三种方式下的性能。
+
+\subsection{实验环境}
+\begin{table}[htb]
+  \centering
+  \bicaption{实验平台}{Experimental Methodology}
+  \label{tab:experimental_methodology}
+    \begin{tabular}{cccccc}
+     \toprule[1.5pt]
+     \multicolumn{5}{c}{\textbf{Each Node}} &   \multirow{2}{*}{\textbf{Cluster}} \\
+     \cmidrule(lr){1-5}
+     Compiler & CPU & Memory & System & Network \\
+     \midrule[1pt]
+     GCC 4.4.7 & 8 Intel Xeon cores & 32GB & CentOS 6.5  & 1 GigE Ethernet & 48-node cluster\\
+     \bottomrule[1.5pt]
+    \end{tabular}
+\end{table}
+
+
+
+\begin{table}[htb]
+  \centering
+  \bicaption{实验数据集及划分算法}{Experimental Data Set and Partition Algorithm}
+  \label{tab:experimental_data_set_and_partition_algorithm}
+    \begin{tabular}{ccccccc}
+     \toprule[1.5pt]
+     & \textbf{Graph} & \textbf{\#V} & \textbf{\#E} & \textbf{E/V} & \textbf{$\lambda$} & {\textbf{Partition Algorithm}} \\
+     \midrule[1pt]
+     \multirow{2}{*}{web} & UK-2005 & 40M & 936M & 23.73 & 3.51 & \multirow{8}{*}{Coordinated Vertex-Cut } \\
+                                         & web-Google & 0.9M & 5.1M & 5.83 & 2.47 \\
+     \cmidrule(lr){1-6}
+      \multirow{2}{*}{road} & road-USA-net & 24M & 58M & 2.44 & 2.14 \\
+                                          & roadNet-CA & 2M & 5.5M & 2.82 & 2.09 \\
+      \cmidrule(lr){1-6}
+      \multirow{4}{*}{social} & twitter & 61.58M & 1468M & 23.85 & 5.52 \\
+                                          & soc-LiveJournal & 4.84M & 68.9M & 14.23 & 4.96 \\
+                                          & enwiki & 4.2M & 101.36M & 24.09M & 7.22 \\
+                                          & com-youtube & 1.1M & 6M & 5.27M & 2.70 \\
+     \bottomrule[1.5pt]
+    \end{tabular}
+\end{table}
+
+为了评测本文所提出的自适应优化方法的效果，我们在由48台虚拟机构成的集群环境中测试了
+PowerGraph的原始同步引擎，LazyGraph的手动调优方法，和基于解的局部性的自适应优化方法
+这三种方式下的性能结果。
+如表\ref{tab:experimental_methodology}所示，每个节点上的操作系统是Centos 6.5，
+配置的编译器版本为4.4.7，配置的CPU有8个核，内存有32GB，
+集群的节点之间以1GigE的以太网连接。
+实验过程中使用的数据集总共包含3个类型，8个不同大小的真实图。
+这些数据集同4.2节中使用的一样，具体元数据如表\ref{tab:experimental_data_set_and_partition_algorithm}所示。
+同时，我们均使用 coordinated vertex-cut 划分算法来做图的划分。
+实验过程中使用了
+Single Source Shortest Path(SSSP)， 
+Connected Component(CC)，
+K-core Decomposition(kcore)， 
+Page Rank这四种典型的图算法来作为测试用例。
+
+
+\subsection{实验结果}
+
+\begin{figure}[h]
+	\centering
+  \captionsetup{justification=centering}
+	\bisubcaptionbox{ SSSP 的加速比\label{fig:speedup_sssp}}{Speedup in SSSP}
+	%[3cm] %标题的长度，超过则会换行，如下一个小图。
+	{\includegraphics[height=4.5cm，width=0.4\textwidth]{speedup_sssp.png}}
+  \hspace{4em}% 这里记得不要空行，否则会变为垂直的两个图
+	\bisubcaptionbox{CC 的加速比\label{fig:speedup_cc}}{Speedup in CC}
+	%[3cm] %标题的长度，超过则会换行，如下一个小图。
+	{\includegraphics[height=4.5cm，width=0.4\textwidth]{speedup_cc.png}}
+	\hspace{4em}% 这里记得不要空行，否则会变为垂直的两个图
+	\bisubcaptionbox{K-Core 的加速比\label{fig:speedup_kcore}}{Speedup in K-Core}
+	%[3cm] %标题的长度，超过则会换行，如下一个小图。
+	{\includegraphics[height=4.5cm，width=0.4\textwidth]{speedup_kcore.png}}
+	\hspace{4em}% 这里记得不要空行，否则会变为垂直的两个图
+	\bisubcaptionbox{PageRank 的加速比\label{fig:speedup_pagerank}}{Speedup in PageRank}
+	{\includegraphics[height=4.5cm，width=0.4\textwidth]{speedup_pagerank.png}}
+	\bicaption{ SSSP，CC，K-Core和PageRank 在48机真实图上的性能对比}{Speedup Comparisons for SSSP， CC ，K-Core and  PageRank on Real-World Graphs on 48 Machines}
+	\label{fig:speedup_four_algorithm}
+\end{figure}
+
+
+\begin{figure}[h]
+  \centering
+  \captionsetup{justification=centering}
+  \includegraphics[width=0.8\textwidth]{sssp-uk-dt-vs-opt}
+  \bicaption{不同集群配置下，SSSP 算法在 uk-2005输入图上的运行时间}{Runtime of the SSP algorithm on the uk-2005 input graph with different cluster configurations}
+  \label{fig:dt-vs-opt}
+\end{figure}
+
+图 \ref{fig:speedup_four_algorithm} 展示了四种图算法在8个不同的输入图上分别采用
+PowerGraph 原始同步引擎，
+LazyGraph 手动调优方法，
+LazyGraph 基于解的局部性的自适应优化方法
+这三种方式进行计算所得到的性能测试结果。
+可以看到，
+在不同的算法和输入图的组合上，LazyGraph的表现性能都好于PowerGraph。
+而在LazyGraph 上， 基于解的局部性的自适应优化方法
+得到的性能提升效果
+和手动调优方式下得到的相当，甚至有时超过了后者。
+
+在手动调优的方法中，我们通过不断的尝试分别在不同的迭代轮次开启延迟数据一致性方法然后取其中最好的值作为最终结果。
+在自适应优化方法中，我们通过在线地观察解的局部性方式来自动选择延迟数据一致性方法的开启轮次。
+通过对比，我们发现，自适应优化方法所自动选择的开启轮次和手动调优方法中最后结果对应的开启轮次是基本一致的。
+这也正是自适应优化方法能够得到和手动调优方法效果相一致甚至超过后者的原因。
+
+
+
+图\ref{fig:dt-vs-opt}则给出了在不同的集群配置下，SSSP 算法在 uk-2005这个输入图上分别采用原始同步引擎，
+基于手动调优得到的决策树方法，基于解的局部性的自适应优化方法 这三种方法所用的运行时间。
+从图中可以看到，从8台机器到48台机器，基于解的局部性的自适应优化方法保持了较好的可扩展性，运行时间先下降然后稳定。
+而基于手动调优得到的决策树方法则出现了不正常的数据波动，在16，32，40台机器时性能没有得到提升甚至下降。
+这也正是前文研究动机中提到的决策树失灵的情况。
+
+我们通过在手动调优得到的最佳组合进行数据拟合得到了决策树方法。
+这种方法在局部性不好的图上观察到包含所有副本在内的活跃点数量下降超过一定比例时开启延迟数据一致性方法。
+在局部性不好的图上，活跃点下降时往往也是解的局部性规律开始出现的时候，所以在一些情况下，
+决策树方法也能得到和手动调优相一致的效果。
+但是，集群的配置会影响图划分，图划分影响顶点的副本点个数，最终集群配置变化会导致活跃点数量的变化。
+在决策树失灵所对应的这些集群配置中，活跃点数量的变化导致决策树误判提前开启了延迟数据一致性方法
+而此时解的局部性现象还没有出现，提前开启就会在本地计算中引入大量的冗余计算，
+最终使得性能没有得到提升甚至下降。
+
+  
+通过以上比较我们可以得出结论，
+基于解的局部性的自适应优化方法确实能够替代繁琐的手动调优方法，自动地得到相对最优的性能提升效果。
+同时这种方法也能正确处理基于手动调优得到的决策树方法失灵的情况。
+
+
+\section{本章小结}
+在本章中，我们先是通过小例子直观说明了全局解和局部解的关系如何影响延迟数据一致性方法中存在的冗余计算。
+在此基础上，我们提出了解的局部性的概念。
+当顶点上的全局解只由某一个局部解构成时，在顶点上开启延迟数据一致性方法能够避免冗余计算。
+当大部分顶点上的全局解都只由某个局部解构成时，我们称之为解的局部性。
+解的局部性现象有利于开启延迟数据一致性方法。
+
+我们在不同算法和输入图的组合的迭代过程中解的局部性规律进行了统计。
+统计结果表明在各种算法和输入图的组合中，解的局部性规律是普遍存在的。
+不过在有些组合上，这种规律一开始就一直存在，在其他组合上，这种规律在迭代进行一段时间后才存在。
+
+基于解的局部性这一规律，我们最终实现了一种在线的自适应优化方法。
+这种方法在线地统计活跃点中由单个局部解构成全局解的顶点的数量和比例，
+当这样的顶点占多数时就开启延迟数据一致性方法，当这样的点占少数时就关闭延迟数据一致性方法。
+在4种常见经典图算法和8个大图数据集上的实验结果表明，这种方法取得了和手动调优方法相一致的性能提升效果。
