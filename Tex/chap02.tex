@@ -227,13 +227,13 @@ LazyGraph\cite{Wang@PPoPP18}提出了一种 延迟数据一致性(lazy data cohe
   \label{fig:pg-eager}
 \end{figure}
 
-Eager data coherency 方式虽然最大程度的维护了顶点上数据的原子性，但是却带来了大量的冗余。
+Eager data coherency 方式虽然最大程度地维护了顶点上数据的一致性，但是却带来了大量的冗余。
 由于副本点上的数据必须从 master 上拷贝而来，因此在 master 上的数据进行修改时副本点上无法进行计算，
 这带来了冗余的等待。
 同时，由于master点上的数据必须通过网络同步拷贝给其他机器上的副本点，系统中因此引入了大量频繁的全局同步和通信。
 
 % lazy data coherence 的方法
-针对 eager data coherency 存在的问题，我们另外提出了一种称之为 LazyAsync 的迟数据一致性方法。
+针对 eager data coherency 存在的问题，我们提出了一种称之为 LazyAsync 的延迟数据一致性方法。
 这种方法在保留副本点带来的好处的同时避免了 eager data coherency 方法存在的各种冗余问题。
 在 LazyAsync 方法中，每个副本点都被当作一个独立的顶点，并且各自可以拥有自己的本地数据。
 顶点在不同机器上的副本点分别维护着自己不同的本地视图，并且基于公式
@@ -254,7 +254,7 @@ LazyAsync 保留了现存分布式图计算编程框架的编程接口，同样�
 而图中的边用来传输数据。
 
 
-当然，LazyAsync 也有和现存的分布式图计算编程框架存在区别。
+当然，LazyAsync 也和现存的分布式图计算编程框架存在区别。
 LazyAsync 要求顶点的迭代计算是可以用公式 $x_i^{t+1} = x_i^t +_{op} \oplus_{j \rightarrow i \in E} \Delta_j^t$ 来表示，
 其中，$i$为顶点的 id 号，$t$为迭代计数器，$+_{op}$和$\oplus$表示运算符，$\Delta_j^t$表示顶点$j$在第t次迭代的消息变化值（deltaMsg）。
 此外，$\oplus$是由用户定义的消息累加的运算符，LazyAsync 要求它必须是可交换且可累加的。
@@ -271,7 +271,7 @@ LazyAsync 要求顶点的迭代计算是可以用公式 $x_i^{t+1} = x_i^t +_{op
 在以下的内容中，我们将介绍如何用 Lazy Data Coherency 去并行异步地进行顶点的计算。
 LazyAsync 重新定义了在运行时系统中，副本点$v_0 , v_1 , ... , v_k$如何进行计算，并得到顶点的值。
 如图\ref{fig:lazy_data_coherency}所示，
-LazyAsync 将在分布式环境下副本点$v_0 , v_1 , ... , v_k$的计算分为本地计算（local computation statges）和数据一致性阶段（data coherency stages）。
+LazyAsync 将在分布式环境下副本点$v_0 , v_1 , ... , v_k$的计算分为本地计算阶段（local computation statges）和数据一致性阶段（data coherency stages）。
 在本地计算阶段中，同一个顶点的副本点维护着各自不同的本地视图，然后用在同一台机器上从本地的邻居顶点收到的本地消息更新自己的数据。
 顶点的新的本地视图对于本地的邻居顶点而言是立即可见的，而不用等待数据一致性点。
 在本地计算的同时，所有的副本点都会累加从本地邻居点发送过来的变化信息。
@@ -300,7 +300,7 @@ LazyAsync 将在分布式环境下副本点$v_0 , v_1 , ... , v_k$的计算分�
 \begin{enumerate}
   \item 输入图的本地性（locality）。我们使用边和顶点的比例 $\frac{E}{V}$ 和复制因子 $\lambda$ 来表示图的输入图本地性。
   其中，复制因子 $\lambda$ 定义为整个图中所有顶点的平均副本点数，也就是总的副本点数于总的顶点数的比值。
-  \item 图算法的运行时特征。大多数图算法都是迭代式地进行计算，不断的更新顶点的数据直至达到某个特定的收敛条件。
+  \item 图算法的运行时特征。大多数图算法都是迭代式地进行计算，不断地更新顶点的数据直至达到某个特定的收敛条件。
   在每一轮的迭代中，顶点的活跃点数\verb|vcnt| 是不断变化的。
   我们使用活跃顶点数的变化趋势来描述算法的特征。
   具体的，用如下公式进行计算：
