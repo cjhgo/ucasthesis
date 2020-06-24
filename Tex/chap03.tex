@@ -82,7 +82,7 @@ Scatter阶段，提供了顶点访问周边邻居并推送信息的接口，SSSP
 在第1轮迭代的apply阶段，机器0上的master 41，master 1根据收到的消息把自己顶点上的数据更新为1，
 机器1上的master 11根据收到的消息把自己顶点上的数据更新为1，
 机器2上的master 31根据收到的消息把自己顶点上的数据更新为1。
-Apply阶段结束后，系统采用急切一致性的方法，把1，11，31，41号顶点master部分的信息立即同步到其他mirror顶点上去，
+Apply阶段结束后，系统采用eager data coherency的方法，把1，11，31，41号顶点master部分的信息立即同步到其他mirror顶点上去，
 这样顶点的master部分和mirror部分就立即实现了一致性。
 在scater阶段，1，11，31，41这4个活跃点的master部分和mirror部分都会执行scatter操作去激活自己的本地邻居。
 反映到图中，
