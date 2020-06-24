@@ -39,7 +39,7 @@ Scatter阶段，提供了顶点访问周边邻居并推送信息的接口，SSSP
 
 \begin{algorithm}[!htbp]
   \small
-  \caption{基于GAS接口实现的 SSSP 算法}\label{alg:SSSP}
+  \caption{基于GAS接口实现的 SSSP 算法\cite{low2013graphlab}}\label{alg:SSSP}
   \begin{algorithmic}[1]
     \Procedure{SSSP}{G(V,E,D)}
     \State $gather(D_u,D_{(v,u)},D_v): return$     \Comment{gather\_nbrs: empty}
@@ -178,8 +178,9 @@ Apply阶段结束后，系统采用急切一致性的方法，把1，11，31，4
 
 由于本地计算中更新立即可见并在本地继续传播使得很多活跃点提前收敛，延迟一致性方法往往能减少图计算的全局迭代次数，降低计算时间。
 以一个来自snap\cite{SNAP}数据集的大图road-USA-net为例，这是一个包含 2400 万个顶点和5800万条边的大图，
-在48机的集群中，对这个图完成 SSSP 计算需要5610轮迭代，耗时1083 s， 使用延迟一致性方法之后，只需要1604轮迭代，耗时176s，
-延迟一致性方法带来了6倍的加速比。
+在48机的集群中，采用原始的 eager data coherency 方法，对这个图完成 SSSP 计算需要5610轮迭代，耗时1083 s， 
+使用 lazy data coherency 方法之后，只需要1604轮迭代，耗时176s，
+LazyAsync 带来了6倍的加速比。
 
 但是延迟数据一致性方法在某些情况下虽然减少了迭代次数却并没有带来时间上的性能收益。
 这一点从总计算时间的构成公式\cite{bsp@1990}中也可以理解：$T=iter \times t_{per\_iter}$。
