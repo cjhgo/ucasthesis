@@ -165,6 +165,50 @@ web-Google， roadNet-CA，com-youtube
 活跃点的局部性规律指的是它的全局解只由单个局部解构成。
 
 
+
+
+
+以图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-google})为例，
+这个子图给出了SSSP算法在web-Google图上关于解的局部性规律的统计结果。
+图中的蓝色曲线给出了图计算迭代过程中总的活跃点的数量先上升后下降的变化趋势。
+图中的红色曲线给出了这些活跃点中由多个局部解构成全局解的活跃点的数量变化趋势。
+可以看到在整个图计算过程中，这些由多个局部解构成全局解的活跃点都只占总活跃点数量的一小部分。
+图中的绿色曲线则具体给出了图计算迭代过程中由单个局部解构成全局解这样具有解的局部性规律的活跃点的比例。
+从图中可以看到，在整个图计算过程中，具有解的局部性规律的活跃点的比例始终在94\%以上。
+也就是说在图计算过程中，大部分活跃点的全局解都只由单个局部解构成。
+
+图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-youtube})，
+\ref{fig:percent-sssp}(\subref{fig:percent-sssp-ca})，
+\ref{fig:percent-sssp}(\subref{fig:percent-sssp-usa})给出了
+SSSP算法在 com-youtube，roadNet-CA，USA-road图上的统计数据。
+这些图上的统计结果也表明了类似的解的局部性规律，尤其是在
+roadNet-CA，USA-road这两张图上，
+具有解的局部性规律的活跃点的比例一直保持在96\%以上。
+
+图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-soc})给出了
+SSSP算法在soc-LiveJournal图上关于解的局部性规律的统计结果。
+和前4个图上的统计结果不同，在soc-LiveJournal图上，
+由多个局部解构成全局解的活跃点的数量存在一个明显上升然后下降的趋势，
+并且上升的数量使得其在总活跃点中占据较高的比例。
+相应地，图中表示具有局部性规律活跃点数量比例的绿色曲线呈现出下降后上升的趋势。
+在之前的4个图上，绿色曲线虽然也有波动但是一直保持在90\%以上，
+而在soc-LiveJournal这个图上，绿色曲线在下降的最低点达到了50\%，随后逐渐上升接近100\%。
+也就是说，在迭代的中间阶段，有相当一部分数量的活跃点的全局解由多个局部解构成，
+此时解的局部性规律现象不明显，
+到了迭代的后期，红色曲线逐渐上升接近100\%，解的局部性规律现象开始出现。
+同时对比三条曲线，本研究发现，在活跃点开始下降的时候，具有解的局部性规律的活跃点的比例开始上升。
+
+图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-enwiki})，
+\ref{fig:percent-sssp}(\subref{fig:percent-sssp-uk})，
+\ref{fig:percent-sssp}(\subref{fig:percent-sssp-ntw})给出了
+SSSP算法在 enwiki，uk-2005，twitter图上的统计数据。
+在这些图上的统计结果上出现了和soc-LiveJournal图上类似的解的局部性规律。
+即在一开始活跃点上升的阶段，由多个局部解构成全局解的活跃点的数量也同样上升，并且占据较高比例，
+在活跃点下降之后，由多个局部解构成全局解的活跃点的数量也同样下降，并且占据比例下降。
+解的局部性规律在活跃点数量下降的后期才开始出现。
+
+
+
 \begin{figure}[H]
 	\centering
   \captionsetup{justification=centering}
@@ -290,48 +334,6 @@ web-Google， roadNet-CA，com-youtube
 }
 	\label{fig:percent-pg}
 \end{figure}
-
-
-
-以图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-google})为例，
-这个子图给出了SSSP算法在web-Google图上关于解的局部性规律的统计结果。
-图中的蓝色曲线给出了图计算迭代过程中总的活跃点的数量先上升后下降的变化趋势。
-图中的红色曲线给出了这些活跃点中由多个局部解构成全局解的活跃点的数量变化趋势。
-可以看到在整个图计算过程中，这些由多个局部解构成全局解的活跃点都只占总活跃点数量的一小部分。
-图中的绿色曲线则具体给出了图计算迭代过程中由单个局部解构成全局解这样具有解的局部性规律的活跃点的比例。
-从图中可以看到，在整个图计算过程中，具有解的局部性规律的活跃点的比例始终在94\%以上。
-也就是说在图计算过程中，大部分活跃点的全局解都只由单个局部解构成。
-
-图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-youtube})，
-\ref{fig:percent-sssp}(\subref{fig:percent-sssp-ca})，
-\ref{fig:percent-sssp}(\subref{fig:percent-sssp-usa})给出了
-SSSP算法在 com-youtube，roadNet-CA，USA-road图上的统计数据。
-这些图上的统计结果也表明了类似的解的局部性规律，尤其是在
-roadNet-CA，USA-road这两张图上，
-具有解的局部性规律的活跃点的比例一直保持在96\%以上。
-
-图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-soc})给出了
-SSSP算法在soc-LiveJournal图上关于解的局部性规律的统计结果。
-和前4个图上的统计结果不同，在soc-LiveJournal图上，
-由多个局部解构成全局解的活跃点的数量存在一个明显上升然后下降的趋势，
-并且上升的数量使得其在总活跃点中占据较高的比例。
-相应地，图中表示具有局部性规律活跃点数量比例的绿色曲线呈现出下降后上升的趋势。
-在之前的4个图上，绿色曲线虽然也有波动但是一直保持在90\%以上，
-而在soc-LiveJournal这个图上，绿色曲线在下降的最低点达到了50\%，随后逐渐上升接近100\%。
-也就是说，在迭代的中间阶段，有相当一部分数量的活跃点的全局解由多个局部解构成，
-此时解的局部性规律现象不明显，
-到了迭代的后期，红色曲线逐渐上升接近100\%，解的局部性规律现象开始出现。
-同时对比三条曲线，本研究发现，在活跃点开始下降的时候，具有解的局部性规律的活跃点的比例开始上升。
-
-图\ref{fig:percent-sssp}(\subref{fig:percent-sssp-enwiki})，
-\ref{fig:percent-sssp}(\subref{fig:percent-sssp-uk})，
-\ref{fig:percent-sssp}(\subref{fig:percent-sssp-ntw})给出了
-SSSP算法在 enwiki，uk-2005，twitter图上的统计数据。
-在这些图上的统计结果上出现了和soc-LiveJournal图上类似的解的局部性规律。
-即在一开始活跃点上升的阶段，由多个局部解构成全局解的活跃点的数量也同样上升，并且占据较高比例，
-在活跃点下降之后，由多个局部解构成全局解的活跃点的数量也同样下降，并且占据比例下降。
-解的局部性规律在活跃点数量下降的后期才开始出现。
-
 
 
 图\ref{fig:percent-cc}，\ref{fig:percent-pg}分别给出了 
