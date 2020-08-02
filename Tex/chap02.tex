@@ -261,7 +261,7 @@ LazyGraph\cite{Wang@PPoPP18}提出了一种 延迟数据一致性方法（LazyAs
   \label{fig:pg-eager}
 \end{figure}
 
-eager data coherency 方式虽然最大程度地维护了顶点上数据的一致性，但是却带来了大量的冗余。
+急切数据一致性（eager data coherency）方式虽然最大程度地维护了顶点上数据的一致性，但是却带来了大量的冗余。
 由于副本点上的数据必须从 master 上拷贝而来，因此在 master 上的数据进行修改时副本点上无法进行计算，
 这带来了冗余的等待。
 同时，由于master点上的数据必须通过网络同步拷贝给其他机器上的副本点，系统中因此引入了大量频繁的全局同步和通信。
